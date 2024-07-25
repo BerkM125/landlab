@@ -282,8 +282,6 @@ class Radiation(Component):
             raise ValueError("albedo must be between 0 and 1")
         return albedo
 
-    # Reduce redundancy: return true if field is made of node values
-    # and if those values match with the dimensions of provided grid
     def _process_field(self, field, field_name):
 
         if isinstance(field, np.ndarray) and np.shape(field) == np.shape(
