@@ -1,9 +1,7 @@
 import copy
-
 import numpy as np
 
 from landlab import Component
-from landlab.components import Radiation
 from landlab.grid.mappers import map_node_to_cell
 
 _VALID_METHODS = {"PriestleyTaylor", "Cosine", "NetRadEqPE", "PenmanMonteith"}
@@ -32,9 +30,10 @@ class PotentialEvapotranspiration(Component):
     >>> from landlab.components.pet import PotentialEvapotranspiration
 
     >>> grid = RasterModelGrid((5, 4), xy_spacing=(0.2, 0.2))
-    >>> grid["cell"]["radiation__ratio_to_flat_surface"] = np.array(
-    ...     [0.38488566, 0.38488566, 0.33309785, 0.33309785, 0.37381705, 0.37381705]
-    ... )
+    >>> grid['cell']['radiation__ratio_to_flat_surface'] = np.array([
+    ...       0.38488566, 0.38488566,
+    ...       0.33309785, 0.33309785,
+    ...       0.37381705, 0.37381705])
     >>> PET = PotentialEvapotranspiration(grid)
     >>> PET.name
     'PotentialEvapotranspiration'
@@ -46,7 +45,7 @@ class PotentialEvapotranspiration(Component):
      'radiation__net_longwave_flux',
      'radiation__net_shortwave_flux',
      'surface__potential_evapotranspiration_rate']
-    >>> sorted(PET.units)  # doctest: +NORMALIZE_WHITESPACE
+    >>> sorted(PET.units) # doctest: +NORMALIZE_WHITESPACE
     [('radiation__incoming_shortwave_flux', 'W/m^2'),
      ('radiation__net_flux', 'W/m^2'),
      ('radiation__net_longwave_flux', 'W/m^2'),
@@ -59,12 +58,12 @@ class PotentialEvapotranspiration(Component):
     2
     >>> PET.grid is grid
     True
-    >>> pet_rate = grid.at_cell["surface__potential_evapotranspiration_rate"]
-    >>> np.allclose(pet_rate, 0.0)
+    >>> pet_rate = grid.at_cell['surface__potential_evapotranspiration_rate']
+    >>> np.allclose(pet_rate, 0.)
     True
     >>> PET.current_time = 0.5
     >>> PET.update()
-    >>> np.allclose(pet_rate, 0.0)
+    >>> np.allclose(pet_rate, 0.)
     False
 
     References
@@ -250,8 +249,9 @@ class PotentialEvapotranspiration(Component):
         else:
             self.Tavg = Tavg
 
+        from landlab.components import Radiation
         # Compute radiation field to use throughout the component
-        self._etpRad = Radiation.Radiation(
+        self._etpRad = Radiation(
             self._grid,
             method="Grid",
             latitude=self._phi / (np.pi / 180.0),
@@ -313,7 +313,6 @@ class PotentialEvapotranspiration(Component):
         self._Tavg = Tavg
 
     def _process_field(self, field, field_name):
-
         if isinstance(field, np.ndarray) and np.shape(field) == np.shape(
             self._grid.at_node["topographic__elevation"]
         ):
@@ -327,7 +326,7 @@ class PotentialEvapotranspiration(Component):
     # and not a cell-based field.
     def _validate_temperature_range(self, min_temp, max_temp):
         # Simple validation first
-        if np.any(min_temp == None) or np.any(max_temp == None):
+        if np.any(min_temp is None) or np.any(max_temp is None):
             raise ValueError("Tmin and Tmax are required fields")
         if np.any(min_temp > max_temp):
             raise ValueError("Tmin must be less than Tmax")
@@ -479,7 +478,7 @@ class PotentialEvapotranspiration(Component):
             #     self._etpRad._cell_values["radiation__net_longwave_flux"],
             # )
             self._etpRad._cell_values["radiation__net_flux"]
-            if np.all(self._user_radiation == None)
+            if np.all(self._user_radiation is None)
             else self._user_radiation
         )
 
@@ -536,7 +535,7 @@ class PotentialEvapotranspiration(Component):
         is_zd_field = isinstance(self._zd, np.ndarray)
 
         # See if defined
-        is_zveg_defined = (self._zveg != None) if not is_zveg_field else True
+        is_zveg_defined = (self._zveg is not None) if not is_zveg_field else True
         is_zo_default = (self._zo == 0.012) if not is_zo_field else False
         is_zd_default = (self._zd == 0.084) if not is_zd_field else False
 
