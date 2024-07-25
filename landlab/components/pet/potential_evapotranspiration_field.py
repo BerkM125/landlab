@@ -1,4 +1,5 @@
 import copy
+
 import numpy as np
 
 from landlab import Component
@@ -30,10 +31,9 @@ class PotentialEvapotranspiration(Component):
     >>> from landlab.components.pet import PotentialEvapotranspiration
 
     >>> grid = RasterModelGrid((5, 4), xy_spacing=(0.2, 0.2))
-    >>> grid['cell']['radiation__ratio_to_flat_surface'] = np.array([
-    ...       0.38488566, 0.38488566,
-    ...       0.33309785, 0.33309785,
-    ...       0.37381705, 0.37381705])
+    >>> grid["cell"]["radiation__ratio_to_flat_surface"] = np.array(
+    ...     [0.38488566, 0.38488566, 0.33309785, 0.33309785, 0.37381705, 0.37381705]
+    ... )
     >>> PET = PotentialEvapotranspiration(grid)
     >>> PET.name
     'PotentialEvapotranspiration'
@@ -45,7 +45,7 @@ class PotentialEvapotranspiration(Component):
      'radiation__net_longwave_flux',
      'radiation__net_shortwave_flux',
      'surface__potential_evapotranspiration_rate']
-    >>> sorted(PET.units) # doctest: +NORMALIZE_WHITESPACE
+    >>> sorted(PET.units)  # doctest: +NORMALIZE_WHITESPACE
     [('radiation__incoming_shortwave_flux', 'W/m^2'),
      ('radiation__net_flux', 'W/m^2'),
      ('radiation__net_longwave_flux', 'W/m^2'),
@@ -58,12 +58,12 @@ class PotentialEvapotranspiration(Component):
     2
     >>> PET.grid is grid
     True
-    >>> pet_rate = grid.at_cell['surface__potential_evapotranspiration_rate']
-    >>> np.allclose(pet_rate, 0.)
+    >>> pet_rate = grid.at_cell["surface__potential_evapotranspiration_rate"]
+    >>> np.allclose(pet_rate, 0.0)
     True
     >>> PET.current_time = 0.5
     >>> PET.update()
-    >>> np.allclose(pet_rate, 0.)
+    >>> np.allclose(pet_rate, 0.0)
     False
 
     References
@@ -250,6 +250,7 @@ class PotentialEvapotranspiration(Component):
             self.Tavg = Tavg
 
         from landlab.components import Radiation
+
         # Compute radiation field to use throughout the component
         self._etpRad = Radiation(
             self._grid,
