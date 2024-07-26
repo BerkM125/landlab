@@ -51,12 +51,12 @@ class PotentialEvapotranspiration(Component):
     4
     >>> PET.grid is grid
     True
-    >>> pet_rate = grid.at_cell['surface__potential_evapotranspiration_rate']
-    >>> np.allclose(pet_rate, 0.)
+    >>> pet_rate = grid.at_cell["surface__potential_evapotranspiration_rate"]
+    >>> np.allclose(pet_rate, 0.0)
     True
     >>> PET._current_time = 0.5
     >>> PET.update()
-    >>> np.allclose(pet_rate, 0.)
+    >>> np.allclose(pet_rate, 0.0)
     False
 
     References
