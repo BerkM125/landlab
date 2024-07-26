@@ -31,39 +31,32 @@ class PotentialEvapotranspiration(Component):
     >>> from landlab.components.pet import PotentialEvapotranspiration
 
     >>> grid = RasterModelGrid((5, 4), xy_spacing=(0.2, 0.2))
-    >>> grid["cell"]["radiation__ratio_to_flat_surface"] = np.array(
-    ...     [0.38488566, 0.38488566, 0.33309785, 0.33309785, 0.37381705, 0.37381705]
-    ... )
+    >>> grid.at_node["topographic__elevation"] = [
+    ...     [0.0, 0.0, 0.0, 0.0],
+    ...     [1.0, 1.0, 1.0, 1.0],
+    ...     [2.0, 2.0, 2.0, 2.0],
+    ...     [3.0, 4.0, 4.0, 3.0],
+    ...     [4.0, 4.0, 4.0, 4.0],
+    ... ]
     >>> PET = PotentialEvapotranspiration(grid)
     >>> PET.name
     'PotentialEvapotranspiration'
-    >>> PET.input_var_names
-    ('radiation__ratio_to_flat_surface',)
     >>> sorted(PET.output_var_names)
-    ['radiation__incoming_shortwave_flux',
-     'radiation__net_flux',
-     'radiation__net_longwave_flux',
-     'radiation__net_shortwave_flux',
-     'surface__potential_evapotranspiration_rate']
-    >>> sorted(PET.units)  # doctest: +NORMALIZE_WHITESPACE
-    [('radiation__incoming_shortwave_flux', 'W/m^2'),
-     ('radiation__net_flux', 'W/m^2'),
-     ('radiation__net_longwave_flux', 'W/m^2'),
-     ('radiation__net_shortwave_flux', 'W/m^2'),
-     ('radiation__ratio_to_flat_surface', 'None'),
-     ('surface__potential_evapotranspiration_rate', 'mm')]
-    >>> PET.grid.number_of_cell_rows
-    3
-    >>> PET.grid.number_of_cell_columns
-    2
+     ['surface__potential_evapotranspiration_rate']
+    >>> sorted(PET.units) # doctest: +NORMALIZE_WHITESPACE
+    [('surface__potential_evapotranspiration_rate', 'mm')]
+    >>> PET.grid.number_of_node_rows
+    5
+    >>> PET.grid.number_of_node_columns
+    4
     >>> PET.grid is grid
     True
-    >>> pet_rate = grid.at_cell["surface__potential_evapotranspiration_rate"]
-    >>> np.allclose(pet_rate, 0.0)
+    >>> pet_rate = grid.at_cell['surface__potential_evapotranspiration_rate']
+    >>> np.allclose(pet_rate, 0.)
     True
-    >>> PET.current_time = 0.5
+    >>> PET._current_time = 0.5
     >>> PET.update()
-    >>> np.allclose(pet_rate, 0.0)
+    >>> np.allclose(pet_rate, 0.)
     False
 
     References
@@ -243,7 +236,8 @@ class PotentialEvapotranspiration(Component):
         # Make sure Tmin and Tmax are valid and provided
         self.Tmin, self.Tmax = self._validate_temperature_range(Tmin, Tmax)
 
-        # If provided with Tmin Tmax, use this. If tmin tmax provided but not this, use Tmin Tmax average
+        # If provided with Tmin Tmax, use this. If tmin tmax provided but not this,
+        # use Tmin Tmax average
         if not isinstance(Tavg, np.ndarray) and Tavg == 17.5:
             self.Tavg = (self._Tmin + self._Tmax) / 2
         else:
@@ -370,7 +364,8 @@ class PotentialEvapotranspiration(Component):
         ``latent_heat_of_vaporization`` properties.
         """
 
-        # Update rad to make sure any variables changed by the user, outside of constructor, are synced
+        # Update rad to make sure any variables changed by the user,
+        # outside of constructor, are synced
         self._UpdateRad()
 
         # if net radiation field is given USE it, if not calculate with RAD
@@ -450,9 +445,11 @@ class PotentialEvapotranspiration(Component):
         return self._E
 
     # Temperature and other variables are often modified by the user outside the
-    # constructor, in which case we need to make sure the radiation fields are completely
-    # updated according to these changes before using a PET method
-    # This is NOT a PET update method, this is just called before any of those methods are called.
+    # constructor, in which case we need to make sure the radiation
+    # fields are completely updated according to these changes
+    # before using a PET method.
+    # This is NOT a PET update method, this is just called before
+    # any PET calculation methods are called.
     def _UpdateRad(self):
         # Validate / adjust Tmin and Tmax if needed
         self._Tmin, self._Tmax = self._validate_temperature_range(
@@ -470,9 +467,11 @@ class PotentialEvapotranspiration(Component):
         self._etpRad._latitude = self._phi / (np.pi / 180.0)
 
         self._etpRad.update()
-        # If radiation is not provided as a property, use internally calculated rad flux fields
-        # The np.add term is to add Rns and Rnl in the case that addition is the correct method for
-        # finding net radiation. In radiation.py, subtraction is the method currently in use.
+        # If radiation is not provided as a property, use internally
+        # calculated rad flux fields
+        # The np.add term is to add Rns and Rnl in the case that
+        # addition is the correct method for finding net radiation.
+        # In radiation.py, subtraction is the method currently in use.
         self._input_rad = (
             # np.add(
             #     self._etpRad._cell_values["radiation__net_shortwave_flux"],
@@ -544,17 +543,20 @@ class PotentialEvapotranspiration(Component):
         # Assert proper dimensions for any fields, all sizes much match grid cell count
         if is_zveg_field and self._zveg.size != cell_sz:
             raise ValueError(
-                f"Zveg field dimensions must match grid dimensions, Zveg size was {self._zveg.size} while grid size was {cell_sz}"
+                f"""Zveg field dimensions must match grid dimensions, Zveg size was
+                {self._zveg.size} while grid size was {cell_sz}"""
             )
 
         if is_zo_field and self._zo.size != cell_sz:
             raise ValueError(
-                f"Zo field dimensions must match grid dimensions, Zo size was {self._zo.size} while grid size was {cell_sz}"
+                f"""Zo field dimensions must match grid dimensions, Zo size was
+                {self._zo.size} while grid size was {cell_sz}"""
             )
 
         if is_zd_field and self._zd.size != cell_sz:
             raise ValueError(
-                f"Zd field dimensions must match grid dimensions, Zd size was {self._zd.size} while grid size was {cell_sz}"
+                f"""Zd field dimensions must match grid dimensions, Zd size was
+                {self._zd.size} while grid size was {cell_sz}"""
             )
 
         # If passed all checks, go onto default value adjustment
@@ -562,7 +564,9 @@ class PotentialEvapotranspiration(Component):
             self._zd = self._zveg * 0.7
             self._zo = self._zveg * 0.1
 
-        self._k = 0.4  # von karman constant for air and clear water, smaller for sediment-laden flows (cloudy dusty flows)
+        # von karman constant for air and clear water,
+        # smaller for sediment-laden flows (cloudy dusty flows)
+        self._k = 0.4
 
         if self._pa is None:
             self._pa = 3.47 * self._etpRad._P / (273.3 + self._inp_temp)
