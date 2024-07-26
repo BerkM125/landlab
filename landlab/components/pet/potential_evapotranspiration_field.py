@@ -43,7 +43,7 @@ class PotentialEvapotranspiration(Component):
     'PotentialEvapotranspiration'
     >>> sorted(PET.output_var_names)
      ['surface__potential_evapotranspiration_rate']
-    >>> sorted(PET.units) # doctest: +NORMALIZE_WHITESPACE
+    >>> sorted(PET.units)  # doctest: +NORMALIZE_WHITESPACE
     [('surface__potential_evapotranspiration_rate', 'mm')]
     >>> PET.grid.number_of_node_rows
     5
@@ -51,12 +51,12 @@ class PotentialEvapotranspiration(Component):
     4
     >>> PET.grid is grid
     True
-    >>> pet_rate = grid.at_cell['surface__potential_evapotranspiration_rate']
-    >>> np.allclose(pet_rate, 0.)
+    >>> pet_rate = grid.at_cell["surface__potential_evapotranspiration_rate"]
+    >>> np.allclose(pet_rate, 0.0)
     True
     >>> PET._current_time = 0.5
     >>> PET.update()
-    >>> np.allclose(pet_rate, 0.)
+    >>> np.allclose(pet_rate, 0.0)
     False
 
     References
