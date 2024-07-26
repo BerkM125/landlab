@@ -283,7 +283,6 @@ class Radiation(Component):
         return albedo
 
     def _process_field(self, field, field_name):
-
         if isinstance(field, np.ndarray) and np.shape(field) == np.shape(
             self._grid.at_node["topographic__elevation"]
         ):
@@ -297,7 +296,7 @@ class Radiation(Component):
     # and not a cell-based field.
     def _validate_temperature_range(self, min_temp, max_temp):
         # Simple validation first
-        if np.any(min_temp == None) or np.any(max_temp == None):
+        if np.any(min_temp is None) or np.any(max_temp is None):
             raise ValueError("Tmin and Tmax are required fields")
         if np.any(min_temp > max_temp):
             raise ValueError("Tmin must be less than Tmax")
