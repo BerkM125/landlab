@@ -199,6 +199,9 @@ class PotentialEvapotranspiration(Component):
         super().__init__(grid)
 
         # For potential node to cell mapping operations
+        # Furthermore internal Radiation should not be sharing the same grid
+        # as the PET component, as Radiation-generated fields should not
+        # exist on the grid used by PET (e.g extraterrestrial radiation)
         self._gridCopy = copy.deepcopy(self._grid)
 
         self._current_time = current_time
@@ -245,9 +248,12 @@ class PotentialEvapotranspiration(Component):
 
         from landlab.components import Radiation
 
+        if "topographic__elevation" not in self._gridCopy.at_node.keys():
+            self._gridCopy.add_field("topographic__elevation", np.zeros(400), at="node")
+
         # Compute radiation field to use throughout the component
         self._etpRad = Radiation(
-            self._grid,
+            self._gridCopy,
             method="Grid",
             latitude=self._phi / (np.pi / 180.0),
             current_time=self._current_time,
@@ -306,6 +312,18 @@ class PotentialEvapotranspiration(Component):
     @Tavg.setter
     def Tavg(self, Tavg):
         self._Tavg = Tavg
+
+    @property
+    def grid(self):
+        return self._grid
+
+    # Update the internal radiation component's grid
+    # if a change were to occur
+    @grid.setter
+    def grid(self, grid):
+        self._grid = grid
+        self._gridCopy = grid
+        self._etpRad._grid = self._gridCopy
 
     def _process_field(self, field, field_name):
         if isinstance(field, np.ndarray) and np.shape(field) == np.shape(
