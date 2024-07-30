@@ -249,7 +249,7 @@ class PotentialEvapotranspiration(Component):
         from landlab.components import Radiation
 
         if "topographic__elevation" not in self._gridCopy.at_node.keys():
-            self._gridCopy.add_field("topographic__elevation", np.zeros(400), at="node")
+            self._gridCopy.add_zeros("topographic__elevation", at="node")
 
         # Compute radiation field to use throughout the component
         self._etpRad = Radiation(
